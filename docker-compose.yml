@@ -1,0 +1,43 @@
+version: '3.9'
+services:
+  web:
+    image: php:8.2-apache
+    container_name: php_server
+    ports:
+      - "8080:80"
+    volumes:
+      - ./www:/var/www/html
+    networks:
+      - app-network
+    command: >
+      sh -c "docker-php-ext-install mysqli && apache2-foreground"
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_server
+    restart: always
+    environment:
+      MYSQL_DATABASE: aeroporto
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: pma_server
+    restart: always
+    environment:
+      PMA_HOST: db
+      PMA_ARBITRARY: 1
+    ports:
+      - "8081:80"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
